@@ -3,29 +3,47 @@ from typing import Optional
 
 
 class ProfileCreate(BaseModel):
-    handle: str = Field(..., min_length=1, max_length=64)
-    name: str = Field(..., min_length=1, max_length=128)
+    handle: str = Field(..., pattern=r"^[a-z0-9_-]{3,40}$")
+    name: str = Field(..., min_length=1, max_length=100)
     bio: Optional[str] = Field(None, max_length=1000)
-    skills: Optional[str] = Field(None, max_length=500)
-    preferred_roles: Optional[str] = Field(None, max_length=500)
-    availability: Optional[str] = Field(None, max_length=32)
+    contacts: Optional[str] = Field(None, max_length=300)
+    availability: bool = True
+    role_id: int
+    skill_ids: list[int] = Field(default_factory=list, max_length=20)
 
 
 class ProfileUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=128)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
     bio: Optional[str] = Field(None, max_length=1000)
-    skills: Optional[str] = Field(None, max_length=500)
-    preferred_roles: Optional[str] = Field(None, max_length=500)
-    availability: Optional[str] = Field(None, max_length=32)
+    contacts: Optional[str] = Field(None, max_length=300)
+    availability: Optional[bool] = None
+    role_id: Optional[int] = None
+    skill_ids: Optional[list[int]] = Field(None, max_length=20)
+
+
+class SkillOut(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
+class RoleOut(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
 
 
 class ProfileRead(BaseModel):
-    id: int
     handle: str
     name: str
     bio: Optional[str]
-    skills: Optional[str]
-    preferred_roles: Optional[str]
-    availability: Optional[str]
+    contacts: Optional[str]
+    availability: bool
+    role: RoleOut
+    skills: list[SkillOut]
+    created_at: str
+    updated_at: str
 
     model_config = {"from_attributes": True}
