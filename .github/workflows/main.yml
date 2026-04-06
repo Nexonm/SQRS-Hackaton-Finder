@@ -1,0 +1,54 @@
+name: Main CI
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  gates:
+    name: Run all quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ./backend
+
+      - name: Setup python
+        uses: actions/setyp-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'poetry'
+
+      - name: R1
+        run:
+          poetry run python -m radon cc -j src | poetry run python scripts/check_cc.py -max 9
+
+      - name: R2
+        run:
+          poetry run python -m radon mi -j src | poetry run python scripts/check_mi.py -min 65
+
+      - name: R3
+        run:
+          poetry run flake8 src/
+
+      - name: R4
+        run:
+          poetry run pytest tests/*.py
+
+      - name: R5
+        run:
+          poetry run pytest -cov=src -cov-report=term-missing -cov-fail-under=75 tests/*.py
+
+      - name: R6-7
+        run:
+          poetry run bandit -t src/ -lll
+
+      - name: R9
+        run:
+          poetry run pytest tests/docs/test_openapi.py
+
+      - name: R10
+        run:
+          poetry run pytest tests/docs/test_readme.py
