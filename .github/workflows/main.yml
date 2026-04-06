@@ -12,12 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            backend
 
       - name: Install poetry
-        run: pipx install poetry
+        run: |
+          cd backend
+          pipx install poetry
 
       - name: Setup python
         uses: actions/setup-python@v5
