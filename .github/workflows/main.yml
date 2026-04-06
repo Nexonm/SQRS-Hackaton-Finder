@@ -30,7 +30,7 @@ jobs:
 
       - name: R1
         run:
-          poetry run python -m radon cc -j src | poetry run python scripts/check_cc.py -max 9
+          poetry run python -m radon cc -j src | poetry run python scripts/check_cc.py
 
       - name: R2
         run:
