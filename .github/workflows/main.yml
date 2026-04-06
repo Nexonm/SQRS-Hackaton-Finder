@@ -34,7 +34,7 @@ jobs:
 
       - name: R2
         run:
-          poetry run python -m radon mi -j src | poetry run python scripts/check_mi.py -min 65
+          poetry run python -m radon mi -j src | poetry run python scripts/check_mi.py
 
       - name: R3
         run:
@@ -50,7 +50,7 @@ jobs:
 
       - name: R6-7
         run:
-          poetry run bandit -t src/ -lll
+          poetry run bandit -r src/ -lll
 
       - name: R9
         run:
