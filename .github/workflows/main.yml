@@ -11,12 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            backend
 
       - name: Install poetry
-        run: |
-          cd backend
-          pipx install poetry
+        run: pipx install poetry
 
       - name: Setup python
         uses: actions/setup-python@v5
