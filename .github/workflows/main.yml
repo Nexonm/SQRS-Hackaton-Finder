@@ -1,0 +1,61 @@
+name: Main CI
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  gates:
+    name: Run all quality gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'poetry'
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: R1
+        run:
+          poetry run python -m radon cc -j src | poetry run python scripts/check_cc.py
+
+      - name: R2
+        run:
+          poetry run python -m radon mi -j src | poetry run python scripts/check_mi.py
+
+      - name: R3
+        run:
+          poetry run flake8 src/
+
+      - name: R4
+        run:
+          poetry run pytest tests/*.py
+
+      - name: R5
+        run:
+          poetry run pytest -cov=src -cov-report=term-missing -cov-fail-under=75 tests/*.py
+
+      - name: R6-7
+        run:
+          poetry run bandit -r src/ -lll
+
+      - name: R9
+        run:
+          poetry run pytest tests/docs/test_openapi.py
+
+      - name: R10
+        run:
+          poetry run pytest tests/docs/test_readme.py
