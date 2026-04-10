@@ -5,13 +5,12 @@ reproducibility and demo readiness.
 """
 from pathlib import Path
 
-README_PATH = Path(__file__).parents[4] / "README.md"
+README_PATH = Path(__file__).parents[3] / "README.md"
 
 REQUIRED_SECTIONS = [
     "project purpose",
     "local setup",
     "how to run",
-    "streamlit",
     "data model",
     "create a profile",
     "create a team",

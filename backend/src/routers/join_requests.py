@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.database import get_db
@@ -13,12 +13,15 @@ router = APIRouter(prefix="/join-requests", tags=["join-requests"])
 
 
 @router.post(
-    "/", response_model=JoinRequestRead, summary="Submit a join request"
+    "/",
+    response_model=JoinRequestRead,
+    status_code=201,
+    summary="Submit a join request",
 )
 def create_join_request(
     data: JoinRequestCreate, db: Session = Depends(get_db)
 ):
-    raise NotImplementedError
+    return service.create_join_request(db, data)
 
 
 @router.get(
@@ -26,8 +29,12 @@ def create_join_request(
     response_model=list[JoinRequestRead],
     summary="List join requests for a team",
 )
-def list_join_requests(team_id: int, db: Session = Depends(get_db)):
-    raise NotImplementedError
+def list_join_requests(
+    team_id: int,
+    owner_handle: str,
+    db: Session = Depends(get_db),
+):
+    return service.list_join_requests_for_team(db, team_id, owner_handle)
 
 
 @router.patch(
@@ -41,4 +48,15 @@ def update_join_request_status(
     owner_handle: str,
     db: Session = Depends(get_db),
 ):
-    raise NotImplementedError
+    join_request = service.update_join_request_status(
+        db,
+        request_id,
+        owner_handle,
+        data.status,
+    )
+    if join_request is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Join request {request_id} not found",
+        )
+    return join_request

@@ -4,7 +4,7 @@ from typing import Literal
 
 class JoinRequestCreate(BaseModel):
     team_id: int
-    applicant_handle: str = Field(..., min_length=1, max_length=64)
+    applicant_handle: str = Field(..., min_length=1, max_length=40)
 
 
 class JoinRequestStatusUpdate(BaseModel):
