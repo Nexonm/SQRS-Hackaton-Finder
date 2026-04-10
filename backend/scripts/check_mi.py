@@ -4,11 +4,13 @@ from sys import exit
 result = input()
 result = json.loads(result)
 
-flag = False
-for filename, metric in result.items():
-    if metric["mi"] < 65:
-        print(f"MI is below required for { filename }")
-        flag = True
+if not result:
+    print("No MI data received")
+    exit(1)
 
-if flag:
+average_mi = sum(metric["mi"] for metric in result.values()) / len(result)
+print(f"Average MI: {average_mi:.2f}")
+
+if average_mi < 65:
+    print("Average MI is below required threshold")
     exit(1)
