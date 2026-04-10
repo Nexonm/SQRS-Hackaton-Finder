@@ -8,7 +8,11 @@ from src.services.common import build_all_match_subquery
 
 
 def base_profile_query() -> Select[tuple[Profile]]:
-    """Create the common eager-loaded query for profile reads."""
+    """Create the common eager-loaded query for profile reads.
+
+    Returns:
+        Base SQLAlchemy Select object with role and skills preloaded.
+    """
     return (
         select(Profile)
         .options(joinedload(Profile.role), joinedload(Profile.skills))
@@ -22,7 +26,17 @@ def apply_profile_filters(
     availability: bool | None,
     skill_ids: list[int] | None,
 ) -> Select[tuple[Profile]]:
-    """Apply deterministic filters used by profile discovery."""
+    """Apply deterministic filters used by profile discovery.
+
+    Args:
+        stmt: Base profile query.
+        role_id: Optional preferred role filter.
+        availability: Optional availability filter.
+        skill_ids: Optional list of required skills.
+
+    Returns:
+        Filtered SQLAlchemy Select object.
+    """
     if role_id is not None:
         stmt = stmt.where(Profile.role_id == role_id)
 
@@ -42,7 +56,15 @@ def apply_profile_filters(
 
 
 def get_profile_by_handle(db: Session, handle: str) -> Profile | None:
-    """Load one profile with role and skills."""
+    """Load one profile with role and skills.
+
+    Args:
+        db: Active SQLAlchemy session.
+        handle: Profile primary key used for lookup.
+
+    Returns:
+        Profile object or None when nothing is found.
+    """
     stmt = base_profile_query().where(Profile.handle == handle)
     return db.scalars(stmt).first()
 
@@ -55,7 +77,19 @@ def list_profiles(
     limit: int = 20,
     offset: int = 0,
 ) -> list[Profile]:
-    """List profiles with optional role, availability, and skill filters."""
+    """List profiles with optional role, availability, and skill filters.
+
+    Args:
+        db: Active SQLAlchemy session.
+        skill_ids: Optional list of skill ids for AND filtering.
+        role_id: Optional role id filter.
+        availability: Optional availability flag.
+        limit: Pagination page size.
+        offset: Pagination offset.
+
+    Returns:
+        List of matching Profile ORM objects.
+    """
     stmt = apply_profile_filters(
         base_profile_query(),
         role_id,

@@ -14,7 +14,15 @@ from src.services.join_request_lookup_service import (
 
 
 def create_join_request(db: Session, data: JoinRequestCreate) -> JoinRequest:
-    """Create a new request from a student to a team."""
+    """Create a new request from a student to a team.
+
+    Args:
+        db: Active SQLAlchemy session.
+        data: Incoming join request payload from API schema.
+
+    Returns:
+        Created JoinRequest ORM object with initial pending status.
+    """
     team = get_team_or_404(db, data.team_id)
     get_profile_or_404(db, data.applicant_handle)
 
@@ -38,14 +46,31 @@ def create_join_request(db: Session, data: JoinRequestCreate) -> JoinRequest:
 
 
 def get_join_request(db: Session, request_id: int) -> JoinRequest | None:
-    """Load one join request by primary key."""
+    """Load one join request by primary key.
+
+    Args:
+        db: Active SQLAlchemy session.
+        request_id: Join request primary key used for lookup.
+
+    Returns:
+        JoinRequest object or None when nothing is found.
+    """
     return db.get(JoinRequest, request_id)
 
 
 def list_join_requests_for_team(
     db: Session, team_id: int, owner_handle: str
 ) -> list[JoinRequest]:
-    """List requests for one team after owner check."""
+    """List requests for one team after owner check.
+
+    Args:
+        db: Active SQLAlchemy session.
+        team_id: Team primary key used for lookup.
+        owner_handle: Handle used for ownership check.
+
+    Returns:
+        List of join requests ordered by creation id.
+    """
     team = get_team_or_404(db, team_id)
     ensure_owner(
         team.owner_handle,
@@ -64,7 +89,17 @@ def list_join_requests_for_team(
 def update_join_request_status(
     db: Session, request_id: int, owner_handle: str, status: str
 ) -> JoinRequest | None:
-    """Accept or reject one pending join request."""
+    """Accept or reject one pending join request.
+
+    Args:
+        db: Active SQLAlchemy session.
+        request_id: Join request primary key used for lookup.
+        owner_handle: Handle used for ownership check.
+        status: Target status, expected accepted or rejected.
+
+    Returns:
+        Updated JoinRequest object or None when request does not exist.
+    """
     join_request = db.get(JoinRequest, request_id)
     if join_request is None:
         return None

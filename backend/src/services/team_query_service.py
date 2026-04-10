@@ -9,7 +9,11 @@ from src.services.team_lookup_service import load_team
 
 
 def base_team_query() -> Select[tuple[Team]]:
-    """Create the common eager-loaded query for team reads."""
+    """Create the common eager-loaded query for team reads.
+
+    Returns:
+        Base SQLAlchemy Select object with roles and skills preloaded.
+    """
     return (
         select(Team)
         .options(
@@ -26,7 +30,17 @@ def apply_team_filters(
     role_ids: list[int] | None,
     owner_handle: str | None,
 ) -> Select[tuple[Team]]:
-    """Apply owner, skill, and role filters for team discovery."""
+    """Apply owner, skill, and role filters for team discovery.
+
+    Args:
+        stmt: Base team query.
+        skill_ids: Optional list of required skill ids.
+        role_ids: Optional list of required role ids.
+        owner_handle: Optional team owner handle filter.
+
+    Returns:
+        Filtered SQLAlchemy Select object.
+    """
     if owner_handle is not None:
         stmt = stmt.where(Team.owner_handle == owner_handle)
 
@@ -52,7 +66,15 @@ def apply_team_filters(
 
 
 def get_team(db: Session, team_id: int) -> Team | None:
-    """Load one team by id for read endpoints."""
+    """Load one team by id for read endpoints.
+
+    Args:
+        db: Active SQLAlchemy session.
+        team_id: Team primary key used for lookup.
+
+    Returns:
+        Team object or None when nothing is found.
+    """
     return load_team(db, team_id)
 
 
@@ -64,7 +86,19 @@ def list_teams(
     limit: int = 20,
     offset: int = 0,
 ) -> list[Team]:
-    """List teams with optional filters and pagination."""
+    """List teams with optional filters and pagination.
+
+    Args:
+        db: Active SQLAlchemy session.
+        skill_ids: Optional list of skill ids for AND filtering.
+        role_ids: Optional list of role ids for AND filtering.
+        owner_handle: Optional owner handle filter.
+        limit: Pagination page size.
+        offset: Pagination offset.
+
+    Returns:
+        List of matching Team ORM objects.
+    """
     stmt = apply_team_filters(
         base_team_query(),
         skill_ids,

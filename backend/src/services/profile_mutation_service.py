@@ -15,7 +15,15 @@ from src.services.profile_query_service import get_profile_by_handle
 
 
 def create_profile(db: Session, data: ProfileCreate) -> Profile:
-    """Create one participant profile after validating dictionaries."""
+    """Create one participant profile after validating dictionaries.
+
+    Args:
+        db: Active SQLAlchemy session.
+        data: Incoming profile payload from API schema.
+
+    Returns:
+        Created Profile ORM object with assigned role and skills.
+    """
     seed_profile_dictionaries(db)
 
     existing = db.get(Profile, data.handle)
@@ -49,7 +57,16 @@ def apply_profile_updates(
     profile: Profile,
     updates: dict,
 ) -> None:
-    """Update relation fields first, then scalar fields."""
+    """Update relation fields first, then scalar fields.
+
+    Args:
+        db: Active SQLAlchemy session.
+        profile: Existing profile ORM object to mutate.
+        updates: Partial update dictionary from schema payload.
+
+    Returns:
+        None. The function mutates the passed profile instance in place.
+    """
     role_id = updates.get("role_id")
     if role_id is not None:
         profile.role_id = get_role_or_422(db, role_id).id
@@ -69,7 +86,16 @@ def update_profile(
     handle: str,
     data: ProfileUpdate,
 ) -> Profile | None:
-    """Apply partial updates to an existing profile."""
+    """Apply partial updates to an existing profile.
+
+    Args:
+        db: Active SQLAlchemy session.
+        handle: Profile primary key used for lookup.
+        data: Partial update payload from API schema.
+
+    Returns:
+        Updated Profile object or None when profile does not exist.
+    """
     profile = get_profile_by_handle(db, handle)
     if profile is None:
         return None
@@ -84,7 +110,15 @@ def update_profile(
 
 
 def delete_profile(db: Session, handle: str) -> bool:
-    """Delete a profile by handle and return success flag."""
+    """Delete a profile by handle and return success flag.
+
+    Args:
+        db: Active SQLAlchemy session.
+        handle: Profile primary key used for delete.
+
+    Returns:
+        True when profile was deleted, otherwise False.
+    """
     profile = db.get(Profile, handle)
     if profile is None:
         return False

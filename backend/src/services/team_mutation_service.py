@@ -18,7 +18,16 @@ def apply_team_updates(
     team: Team,
     updates: dict,
 ) -> None:
-    """Update team relations first, then simple scalar fields."""
+    """Update team relations first, then simple scalar fields.
+
+    Args:
+        db: Active SQLAlchemy session.
+        team: Existing team ORM object to mutate.
+        updates: Partial update dictionary from schema payload.
+
+    Returns:
+        None. The function mutates the passed team instance in place.
+    """
     role_ids = updates.get("required_role_ids")
     if role_ids is not None:
         team.required_roles = get_roles_or_422(db, role_ids)
@@ -35,7 +44,15 @@ def apply_team_updates(
 
 
 def create_team(db: Session, data: TeamCreate) -> Team:
-    """Create one team posting owned by an existing profile."""
+    """Create one team posting owned by an existing profile.
+
+    Args:
+        db: Active SQLAlchemy session.
+        data: Incoming team payload from API schema.
+
+    Returns:
+        Created Team ORM object with required roles and skills loaded.
+    """
     get_profile_or_404(db, data.owner_handle)
     roles = get_roles_or_422(db, data.required_role_ids)
     skills = get_skills_or_422(db, data.required_skill_ids)
@@ -64,7 +81,17 @@ def update_team(
     owner_handle: str,
     data: TeamUpdate,
 ) -> Team | None:
-    """Apply partial updates to a team owned by the caller."""
+    """Apply partial updates to a team owned by the caller.
+
+    Args:
+        db: Active SQLAlchemy session.
+        team_id: Team primary key used for lookup.
+        owner_handle: Handle used for ownership check.
+        data: Partial update payload from API schema.
+
+    Returns:
+        Updated Team object or None when team does not exist.
+    """
     team = load_team(db, team_id)
     if team is None:
         return None
@@ -84,7 +111,16 @@ def update_team(
 
 
 def delete_team(db: Session, team_id: int, owner_handle: str) -> bool:
-    """Delete a team when the owner matches the request."""
+    """Delete a team when the owner matches the request.
+
+    Args:
+        db: Active SQLAlchemy session.
+        team_id: Team primary key used for delete.
+        owner_handle: Handle used for ownership check.
+
+    Returns:
+        True when team was deleted, otherwise False.
+    """
     team = db.get(Team, team_id)
     if team is None:
         return False
