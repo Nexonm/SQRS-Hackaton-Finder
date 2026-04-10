@@ -4,7 +4,10 @@ from src.routers import profiles, teams, join_requests
 
 app = FastAPI(
     title="Hackathon Team Finder",
-    description="API for finding and forming hackathon teams at Innopolis University.",
+    description=(
+        "API for finding and forming hackathon teams "
+        "at Innopolis University."
+    ),
     version="0.1.0",
 )
 

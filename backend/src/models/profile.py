@@ -38,7 +38,11 @@ class Profile(Base):
     updated_at = Column(String, nullable=False)
 
     role = relationship("Role", back_populates="profiles")
-    skills = relationship("Skill", secondary=profile_skills, back_populates="profiles")
+    skills = relationship(
+        "Skill",
+        secondary=profile_skills,
+        back_populates="profiles",
+    )
 
 
 class Skill(Base):

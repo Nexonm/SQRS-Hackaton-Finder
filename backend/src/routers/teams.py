@@ -1,7 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from src.database import get_db
+from src.routers.http_helpers import no_content_or_404, require_resource
+from src.routers.response_docs import (
+    TEAM_CREATE_RESPONSES,
+    TEAM_DELETE_RESPONSES,
+    TEAM_GET_RESPONSES,
+    TEAM_UPDATE_RESPONSES,
+)
 from src.schemas.team import TeamCreate, TeamRead, TeamUpdate
 import src.services.team_service as service
 
@@ -14,11 +21,7 @@ router = APIRouter()
     status_code=201,
     summary="Create a new team posting",
     tags=["teams"],
-    responses={
-        201: {"description": "Team created"},
-        404: {"description": "Owner profile not found"},
-        422: {"description": "Validation error (invalid role_id or skill_id)"},
-    },
+    responses=TEAM_CREATE_RESPONSES,
 )
 def create_team(data: TeamCreate, db: Session = Depends(get_db)):
     return service.create_team(db, data)
@@ -54,16 +57,13 @@ def list_teams(
     response_model=TeamRead,
     summary="Get a team posting by ID",
     tags=["teams"],
-    responses={
-        200: {"description": "Team found"},
-        404: {"description": "Team not found"},
-    },
+    responses=TEAM_GET_RESPONSES,
 )
 def get_team(team_id: int, db: Session = Depends(get_db)):
-    team = service.get_team(db, team_id)
-    if team is None:
-        raise HTTPException(status_code=404, detail=f"Team {team_id} not found")
-    return team
+    return require_resource(
+        service.get_team(db, team_id),
+        f"Team {team_id} not found",
+    )
 
 
 @router.put(
@@ -71,12 +71,7 @@ def get_team(team_id: int, db: Session = Depends(get_db)):
     response_model=TeamRead,
     summary="Update a team posting (owner only)",
     tags=["teams"],
-    responses={
-        200: {"description": "Team updated"},
-        403: {"description": "Not the team owner"},
-        404: {"description": "Team not found"},
-        422: {"description": "Validation error (invalid role_id or skill_id)"},
-    },
+    responses=TEAM_UPDATE_RESPONSES,
 )
 def update_team(
     team_id: int,
@@ -84,29 +79,25 @@ def update_team(
     owner_handle: str,
     db: Session = Depends(get_db),
 ):
-    team = service.update_team(db, team_id, owner_handle, data)
-    if team is None:
-        raise HTTPException(status_code=404, detail=f"Team {team_id} not found")
-    return team
+    return require_resource(
+        service.update_team(db, team_id, owner_handle, data),
+        f"Team {team_id} not found",
+    )
 
 
 @router.delete(
     "/teams/{team_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=204,
     summary="Delete a team posting (owner only)",
     tags=["teams"],
-    responses={
-        204: {"description": "Team deleted"},
-        403: {"description": "Not the team owner"},
-        404: {"description": "Team not found"},
-    },
+    responses=TEAM_DELETE_RESPONSES,
 )
 def delete_team(
     team_id: int,
     owner_handle: str,
     db: Session = Depends(get_db),
 ):
-    deleted = service.delete_team(db, team_id, owner_handle)
-    if not deleted:
-        raise HTTPException(status_code=404, detail=f"Team {team_id} not found")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return no_content_or_404(
+        service.delete_team(db, team_id, owner_handle),
+        f"Team {team_id} not found",
+    )

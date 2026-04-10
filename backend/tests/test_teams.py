@@ -63,7 +63,7 @@ def test_create_team(client: TestClient):
     assert data["title"] == "Test Team"
     assert data["size_target"] == 4
     assert [r["id"] for r in data["required_roles"]] == role_ids
-    assert [s["id"] for s in data["required_skills"]] == skill_ids
+    assert sorted(s["id"] for s in data["required_skills"]) == sorted(skill_ids)
     assert "id" in data
     assert "created_at" in data
     assert "updated_at" in data

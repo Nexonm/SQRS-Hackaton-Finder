@@ -1,7 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from src.database import get_db
+from src.routers.http_helpers import no_content_or_404, require_resource
+from src.routers.response_docs import (
+    PROFILE_CREATE_RESPONSES,
+    PROFILE_DELETE_RESPONSES,
+    PROFILE_GET_RESPONSES,
+    PROFILE_UPDATE_RESPONSES,
+)
 from src.schemas.profile import (
     ProfileCreate,
     ProfileRead,
@@ -42,11 +49,7 @@ def list_roles(db: Session = Depends(get_db)):
     status_code=201,
     summary="Create a new participant profile",
     tags=["profiles"],
-    responses={
-        201: {"description": "Profile created"},
-        409: {"description": "Handle already taken"},
-        422: {"description": "Validation error (invalid role_id or skill_id)"},
-    },
+    responses=PROFILE_CREATE_RESPONSES,
 )
 def create_profile(data: ProfileCreate, db: Session = Depends(get_db)):
     return service.create_profile(db, data)
@@ -82,18 +85,13 @@ def list_profiles(
     response_model=ProfileRead,
     summary="Get profile by handle",
     tags=["profiles"],
-    responses={
-        200: {"description": "Profile found"},
-        404: {"description": "Profile not found"},
-    },
+    responses=PROFILE_GET_RESPONSES,
 )
 def get_profile(handle: str, db: Session = Depends(get_db)):
-    profile = service.get_profile_by_handle(db, handle)
-    if profile is None:
-        raise HTTPException(
-            status_code=404, detail=f"Profile '{handle}' not found"
-        )
-    return profile
+    return require_resource(
+        service.get_profile_by_handle(db, handle),
+        f"Profile '{handle}' not found",
+    )
 
 
 @router.put(
@@ -101,37 +99,26 @@ def get_profile(handle: str, db: Session = Depends(get_db)):
     response_model=ProfileRead,
     summary="Update profile fields",
     tags=["profiles"],
-    responses={
-        200: {"description": "Profile updated"},
-        404: {"description": "Profile not found"},
-        422: {"description": "Validation error (invalid role_id or skill_id)"},
-    },
+    responses=PROFILE_UPDATE_RESPONSES,
 )
 def update_profile(
     handle: str, data: ProfileUpdate, db: Session = Depends(get_db)
 ):
-    profile = service.update_profile(db, handle, data)
-    if profile is None:
-        raise HTTPException(
-            status_code=404, detail=f"Profile '{handle}' not found"
-        )
-    return profile
+    return require_resource(
+        service.update_profile(db, handle, data),
+        f"Profile '{handle}' not found",
+    )
 
 
 @router.delete(
     "/profiles/{handle}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=204,
     summary="Delete a profile",
     tags=["profiles"],
-    responses={
-        204: {"description": "Profile deleted"},
-        404: {"description": "Profile not found"},
-    },
+    responses=PROFILE_DELETE_RESPONSES,
 )
 def delete_profile(handle: str, db: Session = Depends(get_db)):
-    deleted = service.delete_profile(db, handle)
-    if not deleted:
-        raise HTTPException(
-            status_code=404, detail=f"Profile '{handle}' not found"
-        )
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return no_content_or_404(
+        service.delete_profile(db, handle),
+        f"Profile '{handle}' not found",
+    )
