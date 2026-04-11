@@ -61,6 +61,12 @@ cd backend
 poetry run pre-commit run --all-files
 ```
 
+## Backend Documentation
+
+- [Endpoints](backend/docs/endpoints.md)
+- [Testing suite](backend/docs/testing-suite.md)
+- [General backend architecture](backend/docs/backend-architecture.md)
+
 Run the performance check for read endpoints:
 
 ```bash
