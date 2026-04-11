@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "hackathon-finder-frontend"
+version = "0.1.0"
+description = "Hackathon Team Finder — Streamlit frontend"
+authors = []
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.32.0"
+httpx = "^0.27.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+flake8 = "^7.0.0"
+bandit = "^1.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

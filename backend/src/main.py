@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
+from src.database import engine, Base
 from src.routers import profiles, teams, join_requests
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Hackathon Team Finder",
