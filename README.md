@@ -26,6 +26,13 @@ cd backend
 poetry install --no-root
 ```
 
+Install git hooks for local quality checks:
+
+```bash
+cd backend
+poetry run pre-commit install
+```
+
 ## How To Run
 
 Run backend API:
@@ -46,6 +53,29 @@ Run tests:
 cd backend
 poetry run pytest
 ```
+
+Run pre-commit checks manually:
+
+```bash
+cd backend
+poetry run pre-commit run --all-files
+```
+
+Run the performance check for read endpoints:
+
+```bash
+cd backend
+poetry run locust -f locustfile.py --headless -H http://127.0.0.1:8000 -u 10 -r 2 -t 1m --only-summary --csv performance/locust
+poetry run python scripts/check_locust_p95.py performance/locust_stats.csv --max-p95 200
+```
+
+The Locust scenario exercises the read-heavy discovery endpoints:
+
+- `GET /roles`
+- `GET /skills`
+- `GET /profiles/`
+- `GET /teams/`
+- filtered reads on `GET /profiles/` and `GET /teams/`
 
 ## Data Model
 

@@ -1,6 +1,7 @@
 """Dictionary and validation helpers for profiles."""
 
-from sqlalchemy import func, select
+from sqlalchemy import select
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from src.models.profile import Role, Skill
@@ -10,12 +11,16 @@ from src.services.seed_data import ROLE_SEED, SKILL_SEED
 
 def seed_profile_dictionaries(db: Session) -> None:
     """Populate role and skill dictionaries once for a fresh database."""
-    if db.scalar(select(func.count(Skill.id))) == 0:
-        db.add_all([Skill(name=name) for name in SKILL_SEED])
-
-    if db.scalar(select(func.count(Role.id))) == 0:
-        db.add_all([Role(name=name) for name in ROLE_SEED])
-
+    db.execute(
+        insert(Skill)
+        .values([{"name": name} for name in SKILL_SEED])
+        .prefix_with("OR IGNORE")
+    )
+    db.execute(
+        insert(Role)
+        .values([{"name": name} for name in ROLE_SEED])
+        .prefix_with("OR IGNORE")
+    )
     db.commit()
 
 

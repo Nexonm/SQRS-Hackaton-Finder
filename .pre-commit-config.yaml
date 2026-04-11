@@ -1,0 +1,22 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-flake8
+        name: backend R3 flake8
+        entry: poetry --directory backend run flake8 src/
+        language: system
+        pass_filenames: false
+        files: ^backend/(src/.*\.py|pyproject\.toml|poetry\.lock)$
+
+      - id: backend-bandit
+        name: backend R6 bandit
+        entry: poetry --directory backend run bandit -r src/ -lll
+        language: system
+        pass_filenames: false
+        files: ^backend/(src/.*\.py|pyproject\.toml|poetry\.lock)$
+
+      - id: backend-banned-patterns
+        name: backend R7 banned patterns
+        entry: \b(eval|exec)\s*\(|shell\s*=\s*True\b
+        language: pygrep
+        files: ^backend/src/.*\.py$
